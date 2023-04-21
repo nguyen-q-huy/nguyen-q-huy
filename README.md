@@ -1,16 +1,13 @@
-### Hi there 👋
+```Java
+package github.com.nguyen.q.huy;
 
-<!--
-**nguyen-q-huy/nguyen-q-huy** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+public class AboutMe {
+    
+    public static void main(String[] args) {
+        System.out.println("Hey, I'm Huy!");
+        System.out.println("I'm a Java developer based in DXC Technology.");
+    }
+}
+```
 
-Here are some ideas to get you started:
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
