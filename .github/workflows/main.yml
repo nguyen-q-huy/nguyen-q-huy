@@ -37,10 +37,12 @@ jobs:
 
       - name: Sync template and updater
         run: |
-          # Copy ra root để script Python (vốn đang dùng đường dẫn tương đối) nhận diện đúng file
+          # Copy ra root để update.py tìm thấy file
           cp manuals/nguyen-q-huy/TEMPLATE.md TEMPLATE.md
           mkdir -p scripts
           cp manuals/nguyen-q-huy/update.py scripts/update.py
+          # Xóa README.md cũ ở root để đảm bảo script phải ghi file mới
+          rm -f README.md
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -71,13 +73,18 @@ jobs:
           git config user.name "update"
           git config user.email "update@github"
           
-          # Kiểm tra xem README.md ở root có thay đổi không
+          # Nếu README.md chưa được tạo bởi script, hãy copy từ TEMPLATE
+          if [ ! -f README.md ]; then
+            cp TEMPLATE.md README.md
+          fi
+          
+          # Kiểm tra thay đổi và commit
           if git diff --quiet README.md; then
             echo "No changes to commit"
             exit 0
           fi
           
           git add README.md
-          git commit -m "chore: update current thought stream $(TZ='Asia/Ho_Chi_Minh' date +'%Y-%m-%d')"
+          git commit -m "chore: update current thought stream $(date +'%Y-%m-%d')"
           git pull --rebase origin publish
           git push origin publish
