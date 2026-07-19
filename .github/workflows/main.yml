@@ -17,26 +17,33 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Checkout manuals source
+      - name: Download manuals files directly
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
         run: |
-          rm -rf manuals
-          git clone --depth 1 --branch master "https://x-access-token:${GH_TOKEN}@github.com/nguyen-q-huy/manuals.git" manuals
-          git config --global --add safe.directory "$GITHUB_WORKSPACE/manuals"
+          mkdir -p manuals/nguyen-q-huy
+          # Dùng header application/vnd.github.v3.raw để lấy nội dung file thay vì JSON
+          curl -L -H "Authorization: Bearer $GH_API_TOKEN" \
+            -H "Accept: application/vnd.github.v3.raw" \
+            https://api.github.com/repos/nguyen-q-huy/manuals/contents/nguyen-q-huy/TEMPLATE.md \
+            -o manuals/nguyen-q-huy/TEMPLATE.md
+          curl -L -H "Authorization: Bearer $GH_API_TOKEN" \
+            -H "Accept: application/vnd.github.v3.raw" \
+            https://api.github.com/repos/nguyen-q-huy/manuals/contents/nguyen-q-huy/update.py \
+            -o manuals/nguyen-q-huy/update.py
 
-      - name: Sync template and updater from manuals
+      - name: Sync template and updater
         run: |
           cp manuals/nguyen-q-huy/TEMPLATE.md TEMPLATE.md
           mkdir -p scripts
           cp manuals/nguyen-q-huy/update.py scripts/update.py
 
       - name: Set up Python
-        uses: actions/setup-python@v6.3.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -62,13 +69,14 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config user.name "update"
-          git config user.email "update@github"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
           if git diff --quiet; then
             echo "No changes to commit"
             exit 0
           fi
+          
           git add README.md
           git commit -m "chore: update current thought stream $(TZ='Asia/Ho_Chi_Minh' date +'%Y-%m-%d')"
-          git pull --rebase origin publish
-          git push
+          git push origin HEAD:${{ github.ref_name }}
