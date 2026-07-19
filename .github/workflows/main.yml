@@ -21,12 +21,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download manuals files directly
+      - name: Download manuals files
         env:
           GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
         run: |
           mkdir -p manuals/nguyen-q-huy
-          # Dùng header application/vnd.github.v3.raw để lấy nội dung file thay vì JSON
           curl -L -H "Authorization: Bearer $GH_API_TOKEN" \
             -H "Accept: application/vnd.github.v3.raw" \
             https://api.github.com/repos/nguyen-q-huy/manuals/contents/nguyen-q-huy/TEMPLATE.md \
@@ -38,6 +37,7 @@ jobs:
 
       - name: Sync template and updater
         run: |
+          # Copy ra root để script Python (vốn đang dùng đường dẫn tương đối) nhận diện đúng file
           cp manuals/nguyen-q-huy/TEMPLATE.md TEMPLATE.md
           mkdir -p scripts
           cp manuals/nguyen-q-huy/update.py scripts/update.py
@@ -57,7 +57,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           WEATHER_API: ${{ secrets.WEATHER_API }}
           WEATHER_RSS_URL: ${{ secrets.WEATHER_RSS_URL }}
-          TZ: ${{ secrets.TZ }}
           WEATHER_LAT: ${{ secrets.WEATHER_LAT }}
           WEATHER_LON: ${{ secrets.WEATHER_LON }}
           WEATHER_LABEL: ${{ secrets.WEATHER_LABEL }}
@@ -72,12 +71,7 @@ jobs:
           git config user.name "update"
           git config user.email "update@github"
           
-          # Di chuyển hoặc copy file README.md từ manuals ra thư mục gốc (nếu nó bị tạo ở trong đó)
-          if [ -f "manuals/README.md" ]; then
-            cp manuals/README.md README.md
-          fi
-          
-          # Kiểm tra xem có sự thay đổi nào không
+          # Kiểm tra xem README.md ở root có thay đổi không
           if git diff --quiet README.md; then
             echo "No changes to commit"
             exit 0
