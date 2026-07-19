@@ -69,14 +69,21 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "update"
+          git config user.email "update@github"
           
-          if git diff --quiet; then
+          # Di chuyển hoặc copy file README.md từ manuals ra thư mục gốc (nếu nó bị tạo ở trong đó)
+          if [ -f "manuals/README.md" ]; then
+            cp manuals/README.md README.md
+          fi
+          
+          # Kiểm tra xem có sự thay đổi nào không
+          if git diff --quiet README.md; then
             echo "No changes to commit"
             exit 0
           fi
           
           git add README.md
           git commit -m "chore: update current thought stream $(TZ='Asia/Ho_Chi_Minh' date +'%Y-%m-%d')"
-          git push origin HEAD:${{ github.ref_name }}
+          git pull --rebase origin publish
+          git push origin publish
